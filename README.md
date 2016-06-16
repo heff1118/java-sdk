@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Constant Contact JAVA SDK
 =========================
 
@@ -54,3 +55,7 @@ The access token is obtained by performing the Constant Contact Authentication p
 
                                              
 
+=======
+INNOJamn-EventTrigger
+=====================
+>>>>>>> 77246f3e2239d25770db3c7f622285cf31ae188a
