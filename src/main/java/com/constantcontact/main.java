@@ -12,6 +12,7 @@ import com.constantcontact.util.RawApiRequestError;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.ArrayList;
 
 
 /**
@@ -19,41 +20,73 @@ import java.util.List;
  */
 public class main {
 
-
-
     public static void main(String[] args) {
 
-        for (int t = 0; t < 60; t++) {
+        ArrayList<String> LinkIds = new ArrayList<String>();
+        List<ContactList> ListIds = new ArrayList<ContactList>();
+
+        LinkIds.add("465668312939");
+        LinkIds.add("466110148359");
+        LinkIds.add("466114052494");
+
+        for (int t = 0; t < 6000; t++) {
 
             try {
 
                 ConstantContactFactory constantContact = new ConstantContactFactory("3bb60361-f328-4e1c-81f0-472191be0d9e", "xaqkn2gwyvyyk4wrthzgxwaj");
-
-                //Get tracks for specific Campaigns
-                IEmailCampaignTrackingService Tracking = constantContact.createEmailCampaignTrackingService();
-                ResultSet<EmailCampaignTrackingClick> Clicks = Tracking.getClicksByLinkId("1124977684869", "465668312939", 100, "2016-06-08");
-
-                //set Contacts services
                 IContactListService Lists = constantContact.createContactListService();
-                List<ContactList> AddtoThisList = Lists.getLists("2016-01-08");
-                IContactService IcontactService = constantContact.createContactService();
-                List<EmailCampaignTrackingClick> Results = Clicks.getResults();
 
-                for (EmailCampaignTrackingClick e : Results) {
+                int i = 0;
+                while (LinkIds.size() > i) {
 
-                    String CLickedContact = e.getEmailAddress();
-                    ResultSet<Contact> ContactSet = IcontactService.getContactByEmail(CLickedContact);
+                    //Get All tracks for specific Campaigns
+                    IEmailCampaignTrackingService Tracking = constantContact.createEmailCampaignTrackingService();
+                    ResultSet<EmailCampaignTrackingClick> Clicks = Tracking.getClicksByLinkId("1125030959898", LinkIds.get(i), 100, "2016-06-08");
 
-                    for (Contact x : ContactSet.getResults()) {
+                    //Initialize Contacts service
+                    IContactService IcontactService = constantContact.createContactService();
 
-                        x.setLists(AddtoThisList);
+                    //Loop through each click
+                    for (EmailCampaignTrackingClick e:Clicks.getResults()) {
 
-                        IcontactService.updateContact(x, false);
+                        String CLickedContact = e.getEmailAddress();
+                        String selectedLink = e.getLinkId();
+
+                        ResultSet<Contact> ContactSet = IcontactService.getContactByEmail(CLickedContact);
+
+                        for (Contact x : ContactSet.getResults()) {
+
+                            if(selectedLink.equals("465668312939")) {
+                                ListIds.add(0, Lists.getList("1092818561"));//Vegetarian
+                            }
+                            if(selectedLink.equals("466114052494")) {
+                                ListIds.add(0, Lists.getList("1840063460"));//Pailo
+                            }
+                            if(selectedLink.equals("466110148359")) {
+                                ListIds.add(0, Lists.getList("1780133628"));//Meat Eaters
+                            }
+
+                            x.setLists(ListIds);
+                            IcontactService.updateContact(x, false);
+                        }
+
+                        ListIds.clear();
                     }
+
+                    i++;
 
                 }
 
-            } catch (ConstantContactServiceException e) {
+                try {
+
+                    Thread.sleep(15000);
+                    System.out.println("Sleeping " + t);
+
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+            }catch(ConstantContactServiceException e){
                 ConstantContactServiceException c = (ConstantContactServiceException) e.getCause();
                 for (Iterator<RawApiRequestError> i = c.getErrorInfo().iterator(); i.hasNext(); ) {
                     RawApiRequestError item = i.next();
@@ -61,17 +94,7 @@ public class main {
                 }
                 e.printStackTrace();
             }
-
-            try {
-                Thread.sleep(15000);
-
-                System.out.println("Sleeping");
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
         }
-
     }
 }
 
